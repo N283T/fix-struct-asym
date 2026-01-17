@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import multiprocessing
+import os
 import sys
 from dataclasses import dataclass, field
 from datetime import date
@@ -22,6 +23,9 @@ from tqdm import tqdm
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+# Default number of workers: use half of CPU cores, minimum 1, maximum 8
+DEFAULT_WORKERS = min(8, max(1, (os.cpu_count() or 4) // 2))
 
 
 @dataclass
@@ -67,7 +71,8 @@ def find_orphan_chains(cif_path: str) -> OrphanResult | None:
         print(f"Error reading {cif_path}: {e}", file=sys.stderr)
         return None
 
-    if not doc:
+    # Explicit length check for empty document
+    if len(doc) == 0:
         return None
 
     block = doc[0]
@@ -140,14 +145,14 @@ def enumerate_cif_files(mirror_path: Path) -> Iterator[str]:
 
 def scan_pdb_mirror(
     mirror_path: Path,
-    workers: int = 8,
+    workers: int = DEFAULT_WORKERS,
     file_list: list[Path] | None = None,
 ) -> ScanResult:
     """Scan PDB mirror or specific files for orphan chains.
 
     Args:
         mirror_path: Root path of the PDB mirror (used if file_list is None).
-        workers: Number of parallel workers.
+        workers: Number of parallel workers (default: half of CPU cores, max 8).
         file_list: Optional list of specific files to scan.
 
     Returns:
@@ -163,10 +168,13 @@ def scan_pdb_mirror(
 
     results: list[OrphanResult] = []
 
+    # Use chunksize to reduce IPC overhead for large file counts
+    chunksize = max(1, len(files) // (workers * 10))
+
     # Use multiprocessing.Pool.imap_unordered for efficient parallel processing
     with multiprocessing.Pool(processes=workers) as pool:
         with tqdm(total=len(files), desc="Scanning", unit="file") as pbar:
-            for result in pool.imap_unordered(_process_file, files):
+            for result in pool.imap_unordered(_process_file, files, chunksize):
                 if result is not None:
                     results.append(result)
                 pbar.update(1)
@@ -245,8 +253,8 @@ Examples:
         "--workers",
         "-w",
         type=int,
-        default=8,
-        help="Number of parallel workers (default: 8)",
+        default=DEFAULT_WORKERS,
+        help=f"Number of parallel workers (default: {DEFAULT_WORKERS})",
     )
 
     args = parser.parse_args()
