@@ -1,10 +1,42 @@
 [project]
 name = "fix-struct-asym"
 version = "0.1.0"
-description = "Add your description here"
+description = "Detect and fix _struct_asym inconsistencies in PDB CIF files"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "gemmi>=0.7.0",
-    "tqdm>=4.0.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
 ]
+
+[project.scripts]
+find-orphan-chains = "scripts.find_orphan_chains:app"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.9.0",
+    "ty>=0.0.1a6",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["scripts"]
+
+[tool.ty.environment]
+python-version = "3.10"
