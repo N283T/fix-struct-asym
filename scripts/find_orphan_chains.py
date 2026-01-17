@@ -13,7 +13,7 @@ import os
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
-from typing import Annotated, Optional
+from typing import Annotated
 
 import gemmi
 import typer
@@ -87,7 +87,9 @@ def find_orphan_chains(cif_path: str) -> OrphanResult | None:
     """
     try:
         doc = cif.read(cif_path)
-    except Exception as e:
+    except (RuntimeError, OSError) as e:
+        # RuntimeError: gemmi CIF parsing errors
+        # OSError: file access issues
         err_console.print(f"[yellow]Warning:[/] Error reading {cif_path}: {e}")
         return None
 
@@ -167,6 +169,7 @@ def scan_pdb_mirror(
     mirror_path: Path,
     workers: int = DEFAULT_WORKERS,
     file_list: list[Path] | None = None,
+    quiet: bool = False,
 ) -> ScanResult:
     """Scan PDB mirror or specific files for orphan chains.
 
@@ -174,6 +177,7 @@ def scan_pdb_mirror(
         mirror_path: Root path of the PDB mirror (used if file_list is None).
         workers: Number of parallel workers (default: half of CPU cores, max 8).
         file_list: Optional list of specific files to scan.
+        quiet: If True, suppress progress output (for JSON mode).
 
     Returns:
         ScanResult containing all findings.
@@ -182,34 +186,42 @@ def scan_pdb_mirror(
     if file_list:
         files = [str(f) for f in file_list]
     else:
-        with err_console.status("[bold blue]Enumerating CIF files..."):
+        if not quiet:
+            with err_console.status("[bold blue]Enumerating CIF files..."):
+                files = enumerate_cif_files(mirror_path)
+            err_console.print(f"[green]Found {len(files):,} CIF files[/]")
+        else:
             files = enumerate_cif_files(mirror_path)
-        err_console.print(f"[green]Found {len(files):,} CIF files[/]")
 
     results: list[OrphanResult] = []
 
     # Use chunksize to reduce IPC overhead for large file counts
     chunksize = max(1, len(files) // (workers * 10))
 
-    # Use rich progress bar
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        TaskProgressColumn(),
-        MofNCompleteColumn(),
-        TimeElapsedColumn(),
-        TimeRemainingColumn(),
-        console=err_console,
-    ) as progress:
-        task = progress.add_task("[cyan]Scanning files...", total=len(files))
-
-        # Use multiprocessing.Pool.imap_unordered for efficient parallel processing
-        with multiprocessing.Pool(processes=workers) as pool:
+    # Use multiprocessing.Pool.imap_unordered for efficient parallel processing
+    with multiprocessing.Pool(processes=workers) as pool:
+        if quiet:
+            # Silent processing for JSON mode
             for result in pool.imap_unordered(_process_file, files, chunksize):
                 if result is not None:
                     results.append(result)
-                progress.update(task, advance=1)
+        else:
+            # Rich progress bar for interactive mode
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                BarColumn(),
+                TaskProgressColumn(),
+                MofNCompleteColumn(),
+                TimeElapsedColumn(),
+                TimeRemainingColumn(),
+                console=err_console,
+            ) as progress:
+                task = progress.add_task("[cyan]Scanning files...", total=len(files))
+                for result in pool.imap_unordered(_process_file, files, chunksize):
+                    if result is not None:
+                        results.append(result)
+                    progress.update(task, advance=1)
 
     # Sort by PDB ID
     results.sort(key=lambda r: r.pdb_id)
@@ -297,7 +309,7 @@ def display_summary(result: ScanResult) -> None:
 @app.command()
 def main(
     mirror_path: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--mirror-path",
             "-m",
@@ -309,7 +321,7 @@ def main(
         ),
     ] = None,
     files: Annotated[
-        Optional[list[Path]],
+        list[Path] | None,
         typer.Option(
             "--files",
             "-f",
@@ -321,7 +333,7 @@ def main(
         ),
     ] = None,
     output: Annotated[
-        Optional[Path],
+        Path | None,
         typer.Option(
             "--output",
             "-o",
@@ -392,12 +404,14 @@ def main(
             mirror_path=Path("."),  # Not used when file_list is provided
             workers=workers,
             file_list=files,
+            quiet=json_output,
         )
     else:
         assert mirror_path is not None
         result = scan_pdb_mirror(
             mirror_path=mirror_path,
             workers=workers,
+            quiet=json_output,
         )
 
     # Output results
