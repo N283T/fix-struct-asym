@@ -208,9 +208,7 @@ def main(
 
     # Show configuration
     if not json_output:
-        config_text = (
-            f"[bold]Workers:[/] {workers}\n[bold]Output:[/] {output or 'stdout'}"
-        )
+        config_text = f"[bold]Workers:[/] {workers}\n[bold]Output:[/] {output}"
         if limit:
             config_text += f"\n[bold]Limit:[/] {limit:,} files (random sample)"
         err_console.print(
