@@ -6,7 +6,15 @@ Detect and fix `_struct_asym` inconsistencies in PDB mmCIF files.
 
 During analysis of the PDB archive, we discovered a data inconsistency where certain entries contain `_atom_site.label_asym_id` values that lack corresponding entries in the `_struct_asym` category. According to the mmCIF dictionary, every chain referenced in `_atom_site` should have a matching definition in `_struct_asym`.
 
-A systematic scan of **243,083 PDB entries** (as of 2026-01-17) identified **3 affected entries**:
+A systematic scan of **243,083 PDB entries** identified **3 affected entries**:
+
+| Date | Source | Action |
+|------|--------|--------|
+| 2025-10-10 | PDB mirror | Mirror sync |
+| 2026-01-17 | PDB mirror | Full archive scan (243,083 entries) |
+| 2026-01-18 | RCSB | Verification of affected entries |
+
+**Affected entries:**
 
 | PDB ID | Missing Asym ID(s) | Component | Atom Count |
 |--------|-------------------|-----------|------------|
