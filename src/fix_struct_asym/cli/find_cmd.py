@@ -15,7 +15,6 @@ from rich.table import Table
 
 from fix_struct_asym.cli._common import (
     DEFAULT_WORKERS,
-    console,
     create_progress,
     err_console,
 )
@@ -137,13 +136,13 @@ def main(
         ),
     ] = None,
     output: Annotated[
-        Path | None,
+        Path,
         typer.Option(
             "--output",
             "-o",
-            help="Output JSON file (default: stdout)",
+            help="Output JSON file",
         ),
-    ] = None,
+    ] = Path("data/results.json"),
     workers: Annotated[
         int,
         typer.Option(
@@ -179,11 +178,14 @@ def main(
 
     [bold]Examples:[/]
 
-        # Scan specific files
+        # Scan specific files (outputs to data/results.json by default)
         [cyan]find-missing-struct-asym -f 2g10.cif.gz -f 1ts6.cif.gz[/]
 
         # Scan entire PDB mirror
-        [cyan]find-missing-struct-asym -m /path/to/pdb/mirror -o results.json[/]
+        [cyan]find-missing-struct-asym -m /path/to/pdb/mirror[/]
+
+        # Scan with custom output path
+        [cyan]find-missing-struct-asym -m /path/to/pdb/mirror -o custom.json[/]
 
         # Scan 100 random files from PDB mirror
         [cyan]find-missing-struct-asym -m /path/to/pdb/mirror --limit 100[/]
@@ -256,12 +258,10 @@ def main(
     output_dict = result_to_dict(scan_result)
     json_str = json.dumps(output_dict, indent=2)
 
-    if output:
-        output.write_text(json_str)
-        if not json_output:
-            err_console.print(f"[green]Results written to {output}[/]")
-    else:
-        console.print(json_str)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json_str)
+    if not json_output:
+        err_console.print(f"[green]Results written to {output}[/]")
 
     # Display summary
     if not json_output:
