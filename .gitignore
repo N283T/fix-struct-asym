@@ -14,3 +14,4 @@ plans/
 reports/wwpdb-report.md
 reports/wwpdb-report-ja.md
 .DS_Store
+.claude/settings.local.json
