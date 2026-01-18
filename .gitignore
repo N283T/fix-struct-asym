@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local files
+plans/
+reports/wwpdb-report.md
+reports/wwpdb-report-ja.md

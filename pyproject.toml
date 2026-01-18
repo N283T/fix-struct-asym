@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "fix-struct-asym"
 version = "0.1.0"
@@ -11,7 +15,8 @@ dependencies = [
 ]
 
 [project.scripts]
-find-orphan-chains = "scripts.find_orphan_chains:app"
+find-missing-struct-asym = "fix_struct_asym.cli.find_cmd:app"
+fix-missing-struct-asym = "fix_struct_asym.cli.fix_cmd:app"
 
 [dependency-groups]
 dev = [
@@ -19,6 +24,9 @@ dev = [
     "ruff>=0.9.0",
     "ty>=0.0.1a6",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/fix_struct_asym"]
 
 [tool.ruff]
 target-version = "py310"
@@ -36,7 +44,11 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["scripts"]
+known-first-party = ["fix_struct_asym"]
 
 [tool.ty.environment]
 python-version = "3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
