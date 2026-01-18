@@ -2,6 +2,11 @@
 
 Detect and fix `_struct_asym` inconsistencies in PDB mmCIF files.
 
+## Reports
+
+- [English Report](reports/report.md)
+- [日本語レポート](reports/report_jp.md)
+
 ## Background
 
 During analysis of the PDB archive, we discovered a data inconsistency where certain entries contain `_atom_site.label_asym_id` values that lack corresponding entries in the `_struct_asym` category. According to the mmCIF dictionary, every chain referenced in `_atom_site` should have a matching definition in `_struct_asym`.
@@ -64,9 +69,9 @@ fix-missing-struct-asym -i results.json -o ./fixed/
 
 Pre-generated corrected files are available in the `fixed/` directory:
 
-- `fixed/1ts6.cif.gz`
-- `fixed/2g10.cif.gz`
-- `fixed/2k9y.cif.gz`
+- `fixed/1ts6.cif`
+- `fixed/2g10.cif`
+- `fixed/2k9y.cif`
 
 ## Requirements
 
