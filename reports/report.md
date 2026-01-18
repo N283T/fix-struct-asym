@@ -8,10 +8,12 @@
 
 ## Executive Summary
 
-A systematic scan of the PDB archive identified **3 entries** (out of 243,083 examined) containing `_atom_site.label_asym_id` values that lack corresponding entries in the `_struct_asym` category. All affected cases involve water molecule chains (HOH).
+A systematic scan of the PDB archive identified **3 entries** (out of 243,083 examined) containing `_atom_site.label_asym_id` values that lack corresponding entries in the `_struct_asym` category. All affected cases involve water (HOH) asym_ids.
 
 **Affected Entries:** 1TS6, 2G10, 2K9Y
 **Impact Rate:** 0.001% of entries examined
+
+> **Terminology note:** In this report, "asym_id" refers to `_atom_site.label_asym_id` and `_struct_asym.id` values (not `auth_asym_id`).
 
 ---
 
@@ -19,16 +21,16 @@ A systematic scan of the PDB archive identified **3 entries** (out of 243,083 ex
 
 ### Issue
 
-According to the mmCIF dictionary, the `_struct_asym` category defines the asymmetric unit contents and should contain an entry for every chain referenced by `_atom_site.label_asym_id`. The affected entries contain atom records with `label_asym_id` values that have no corresponding `_struct_asym.id` definition.
+According to the mmCIF dictionary, the `_struct_asym` category defines the asymmetric unit contents and should contain an entry for every `label_asym_id` referenced by `_atom_site`. The affected entries contain atom records with `label_asym_id` values that have no corresponding `_struct_asym.id` definition.
 
 ### Technical Details
 
 | Aspect | Description |
 |--------|-------------|
 | Expected behavior | Every unique `_atom_site.label_asym_id` value has a matching `_struct_asym.id` entry |
-| Observed behavior | Certain water chains are referenced in `_atom_site` but absent from `_struct_asym` |
+| Observed behavior | Certain water asym_ids are referenced in `_atom_site` but absent from `_struct_asym` |
 | Affected category | `_struct_asym` |
-| Pattern | All missing entries correspond to water (HOH) chains |
+| Pattern | All missing entries correspond to water (HOH) asym_ids |
 
 ---
 
@@ -36,20 +38,20 @@ According to the mmCIF dictionary, the `_struct_asym` category defines the asymm
 
 | PDB ID | Missing `_struct_asym.id` | Component | Atom Count | Notes |
 |--------|---------------------------|-----------|------------|-------|
-| 1TS6   | C                         | HOH       | 7          | Single water chain |
-| 2G10   | F                         | HOH       | 147        | Single water chain |
-| 2K9Y   | C, D                      | HOH       | 9, 3       | Two water chains |
+| 1TS6   | C                         | HOH       | 7          | Single missing asym_id |
+| 2G10   | F                         | HOH       | 147        | Single missing asym_id |
+| 2K9Y   | C, D                      | HOH       | 9, 3       | Two missing asym_ids |
 
 ### Detailed Findings
 
 **1TS6**
-Chain C contains 7 water oxygen atoms referenced in `_atom_site` but lacks a corresponding `_struct_asym` entry.
+Asym_id C contains 7 water oxygen atoms referenced in `_atom_site` but lacks a corresponding `_struct_asym` entry.
 
 **2G10**
-Chain F contains 147 water oxygen atoms referenced in `_atom_site` but lacks a corresponding `_struct_asym` entry.
+Asym_id F contains 147 water oxygen atoms referenced in `_atom_site` but lacks a corresponding `_struct_asym` entry.
 
 **2K9Y**
-Chains C and D contain 9 and 3 water oxygen atoms respectively, both referenced in `_atom_site` but lacking corresponding `_struct_asym` entries.
+Asym_ids C and D contain 9 and 3 water oxygen atoms respectively, both referenced in `_atom_site` but lacking corresponding `_struct_asym` entries.
 
 ### Example: 2G10
 
@@ -67,9 +69,9 @@ D N N 4 ?
 E N N 5 ?
 ```
 
-Note: Chain F is not defined in `_struct_asym`, although entity 5 (water) exists and should be referenced.
+Note: Asym_id F is not defined in `_struct_asym`, although entity 5 (water) exists and should be referenced.
 
-**`_atom_site` records referencing chain F (first 5 of 147):**
+**`_atom_site` records referencing asym_id F (first 5 of 147):**
 ```
 _atom_site.group_PDB
 _atom_site.id
@@ -128,11 +130,12 @@ Note: The initial scan used a local mirror synced approximately 3 months prior. 
 
 ## Supplementary Materials
 
-Corrected mmCIF files are available at the GitHub repository:
+Corrected mmCIF files and scan results are available at the GitHub repository:
 
 - `fixed/1ts6.cif.gz`
 - `fixed/2g10.cif.gz`
 - `fixed/2k9y.cif.gz`
+- `reports/data/results.json`
 
 **Repository:** https://github.com/N283T/fix-struct-asym
 
@@ -140,4 +143,4 @@ Corrected mmCIF files are available at the GitHub repository:
 
 ## Reproducibility
 
-This report was generated using automated detection tools. The methodology and corrected files are publicly available for verification at the repository above.
+This report was generated using automated detection tools. The methodology, scan results, and corrected files are publicly available for verification at the repository above.

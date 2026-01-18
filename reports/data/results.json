@@ -1,0 +1,59 @@
+{
+  "scan_date": "2026-01-17",
+  "total_scanned": 243083,
+  "affected_entries": 3,
+  "entries": [
+    {
+      "pdb_id": "1ts6",
+      "file_path": "/Users/nagaet/pdb/structures/divided/mmCIF/ts/1ts6.cif.gz",
+      "orphan_chains": [
+        "C"
+      ],
+      "details": {
+        "C": {
+          "comp_ids": [
+            "HOH"
+          ],
+          "atom_count": 7
+        }
+      }
+    },
+    {
+      "pdb_id": "2g10",
+      "file_path": "/Users/nagaet/pdb/structures/divided/mmCIF/g1/2g10.cif.gz",
+      "orphan_chains": [
+        "F"
+      ],
+      "details": {
+        "F": {
+          "comp_ids": [
+            "HOH"
+          ],
+          "atom_count": 147
+        }
+      }
+    },
+    {
+      "pdb_id": "2k9y",
+      "file_path": "/Users/nagaet/pdb/structures/divided/mmCIF/k9/2k9y.cif.gz",
+      "orphan_chains": [
+        "C",
+        "D"
+      ],
+      "details": {
+        "C": {
+          "comp_ids": [
+            "HOH"
+          ],
+          "atom_count": 9
+        },
+        "D": {
+          "comp_ids": [
+            "HOH"
+          ],
+          "atom_count": 3
+        }
+      }
+    }
+  ]
+}
