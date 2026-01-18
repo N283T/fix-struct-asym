@@ -113,7 +113,7 @@ def scan_pdb_mirror(
         ScanResult containing all findings.
     """
     # Collect file paths
-    if file_list:
+    if file_list is not None:
         files = [str(f) for f in file_list]
     else:
         files = enumerate_cif_files(mirror_path)
